@@ -1,0 +1,53 @@
+# HTTP Mode Dockerfile for MCP Server
+FROM node:18-alpine AS base
+
+# Install Salesforce CLI and dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    openssh-client \
+    ca-certificates \
+    && npm install -g @salesforce/cli@latest
+
+# Create non-root user
+RUN addgroup -g 1001 -S mcpuser && \
+    adduser -S mcpuser -u 1001 -G mcpuser
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source and build
+COPY src/ ./src/
+RUN npm run build
+
+# Create HTTP version of the server
+COPY docker/http-server.js ./build/
+
+# Set ownership
+RUN chown -R mcpuser:mcpuser /app && \
+    mkdir -p /home/mcpuser/.sfdx && \
+    mkdir -p /home/mcpuser/.config/sf && \
+    chown -R mcpuser:mcpuser /home/mcpuser
+
+USER mcpuser
+
+# Environment variables
+ENV NODE_ENV=production
+ENV MCP_MODE=http
+ENV MCP_PORT=3000
+
+# Health check for HTTP mode
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+EXPOSE 3000
+
+# HTTP server command
+CMD ["node", "build/http-server.js"]

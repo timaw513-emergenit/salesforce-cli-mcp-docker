@@ -1,0 +1,44 @@
+# Development Dockerfile with hot reload
+FROM node:18-alpine AS development
+
+# Install development tools and Salesforce CLI
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    openssh-client \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    && npm install -g @salesforce/cli@latest \
+    && npm install -g nodemon \
+    && npm install -g typescript
+
+# Create non-root user
+RUN addgroup -g 1001 -S mcpuser && \
+    adduser -S mcpuser -u 1001 -G mcpuser
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Create directories and set permissions
+RUN mkdir -p /home/mcpuser/.sfdx && \
+    mkdir -p /home/mcpuser/.config/sf && \
+    chown -R mcpuser:mcpuser /home/mcpuser && \
+    chown -R mcpuser:mcpuser /app
+
+USER mcpuser
+
+# Environment variables for development
+ENV NODE_ENV=development
+ENV MCP_LOG_LEVEL=debug
+
+# Development command with hot reload
+CMD ["npm", "run", "dev"]

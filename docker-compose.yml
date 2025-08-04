@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # Main MCP Server
+  salesforce-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: salesforce-mcp-server
+    restart: unless-stopped
+    volumes:
+      # Mount Salesforce CLI auth data
+      - salesforce_auth:/home/mcpuser/.sfdx
+      - salesforce_config:/home/mcpuser/.config/sf
+      # Mount local project files for development
+      - ./force-app:/app/force-app:ro
+      - ./config:/app/config:ro
+      - ./data:/app/data:ro
+      # Mount logs directory
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - SF_AUTOUPDATE_DISABLE=true
+      - SF_DISABLE_LOG_FILE=true
+      - SFDX_DISABLE_AUTOUPDATE=true
+      - MCP_LOG_LEVEL=info
+    networks:
+      - mcp-network
+    # For stdio mode (default)
+    stdin_open: true
+    tty: true
+
+  # HTTP Mode MCP Server (alternative)
+  salesforce-mcp-http:
+    build:
+      context: .
+      dockerfile: Dockerfile.http
+      target: production
+    container_name: salesforce-mcp-http-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - salesforce_auth:/home/mcpuser/.sfdx
+      - salesforce_config:/home/mcpuser/.config/sf
+      - ./force-app:/app/force-app:ro
+      - ./config:/app/config:ro
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - MCP_MODE=http
+      - MCP_PORT=3000
+      - SF_AUTOUPDATE_DISABLE=true
+    networks:
+      - mcp-network
+    profiles:
+      - http-mode
+
+  # Development mode with hot reload
+  salesforce-mcp-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: salesforce-mcp-dev
+    volumes:
+      - .:/app
+      - salesforce_auth:/home/mcpuser/.sfdx
+      - salesforce_config:/home/mcpuser/.config/sf
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MCP_LOG_LEVEL=debug
+    networks:
+      - mcp-network
+    profiles:
+      - development
+    stdin_open: true
+    tty: true
+
+  # MCP Inspector for testing
+  mcp-inspector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: mcp-inspector
+    command: ["npx", "@modelcontextprotocol/inspector", "build/index.js"]
+    ports:
+      - "3001:3001"
+    volumes:
+      - salesforce_auth:/home/mcpuser/.sfdx
+      - salesforce_config:/home/mcpuser/.config/sf
+    environment:
+      - NODE_ENV=development
+    networks:
+      - mcp-network
+    profiles:
+      - inspector
+
+volumes:
+  salesforce_auth:
+    name: salesforce_auth_data
+  salesforce_config:
+    name: salesforce_config_data
+
+networks:
+  mcp-network:
+    name: mcp-network
+    driver: bridge
