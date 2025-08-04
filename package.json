@@ -1,0 +1,70 @@
+{
+  "name": "salesforce-cli-mcp-docker",
+  "version": "1.0.0",
+  "description": "Dockerized Salesforce CLI MCP Server with multiple deployment modes",
+  "type": "module",
+  "bin": {
+    "salesforce-cli-mcp": "./build/index.js"
+  },
+  "files": [
+    "build",
+    "docker",
+    "README.md",
+    "DOCKER.md"
+  ],
+  "scripts": {
+    "setup": "node setup.js",
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsc --watch",
+    "prepare": "npm run build",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "test": "npm run build && npm run inspector",
+    "clean": "rm -rf build",
+    "start": "node build/index.js",
+    "docker:build": "./docker/scripts.sh build-all",
+    "docker:setup": "./docker/scripts.sh setup-auth",
+    "docker:run": "./docker/scripts.sh run-stdio",
+    "docker:http": "./docker/scripts.sh run-http",
+    "docker:dev": "./docker/scripts.sh run-dev",
+    "docker:test": "./docker/scripts.sh test",
+    "docker:clean": "./docker/scripts.sh cleanup"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/express": "^4.17.17",
+    "@types/cors": "^2.8.13",
+    "typescript": "^5.3.3",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "docker": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timaw513-emergenit/salesforce-cli-mcp-docker"
+  },
+  "keywords": [
+    "salesforce",
+    "cli",
+    "mcp",
+    "model-context-protocol",
+    "docker",
+    "containers",
+    "ai",
+    "claude",
+    "assistant"
+  ],
+  "author": "timaw513-emergenit",
+  "license": "MIT",
+  "homepage": "https://github.com/timaw513-emergenit/salesforce-cli-mcp-docker#readme",
+  "bugs": {
+    "url": "https://github.com/timaw513-emergenit/salesforce-cli-mcp-docker/issues"
+  }
+}
