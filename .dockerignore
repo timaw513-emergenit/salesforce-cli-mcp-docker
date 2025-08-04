@@ -12,6 +12,7 @@ dist/
 
 # Environment files
 .env*
+!.env.example
 
 # OS generated files
 .DS_Store
@@ -29,50 +30,64 @@ Thumbs.db
 *.swo
 *~
 
-# Git
-.git/
-.gitignore
-
-# Documentation
-*.md
-DOCKER.md
-docs/
-
-# Test files
-test/
-*.test.js
-*.test.ts
-
-# CI/CD
-.github/
-.gitlab-ci.yml
-
-# Docker
-docker-compose*.yml
-Dockerfile*
-
 # Logs
 logs/
 *.log
 
-# Auth backups
-auth-backup-*/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
 # Temporary files
 tmp/
 temp/
 
+# Git
+.git/
+.gitignore
+
+# Documentation (except README)
+*.md
+!README.md
+!DOCKER.md
+docs/
+
+# Test files
+test/
+*.test.js
+*.spec.js
+coverage/
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Auth backups
+auth-backup-*/
+
+# Volume data
+data/
+volumes/
+
+# Example and template files
+examples/
+templates/
+*.example
+*.template
+
+# Salesforce specific
+.sfdx/
+.sf/
+force-app/main/default/scratch-orgs/
+
 # MCP client configs
 mcp.json
 cline_mcp_settings.json
-
-# Coverage reports
-coverage/
-.nyc_output/
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
